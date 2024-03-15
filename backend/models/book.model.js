@@ -6,8 +6,8 @@ const bookSchema = mongoose.Schema({
   year: { type: String, required: true },
   gender: { type: String, required: true },
   rate: { type: Number, required: true },
-  imageUrl: { type: String, required: true },
-});
-
+  imageUrl: { type: String, required: true }},
+  { collection: 'books' });
+  
 module.exports = mongoose.model('Book', bookSchema);
 

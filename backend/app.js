@@ -1,8 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
-const userRoutes = require('./routes/user.routes');
-const bookRoutes = require('./routes/book.routes')
+const userRoutes = require('./routes/user.route');
+const bookRoutes = require('./routes/book.route')
+
+
 
 mongoose.connect('mongodb+srv://DavidMartz:mongodb67@cluster0.gnr8vks.mongodb.net/',
   { useNewUrlParser: true,
@@ -17,7 +19,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
 });
-app.use('/api/book', bookRoutes);
+app.use('/api/books', bookRoutes);
 app.use('/api/auth', userRoutes);
 
 module.exports = app;
