@@ -1,13 +1,20 @@
 const mongoose = require('mongoose');
 
 const bookSchema = mongoose.Schema({
+  userId: { type: String, required: true },
   title: { type: String, required: true },
-  auteur: { type: String, required: true },
-  year: { type: String, required: true },
-  gender: { type: String, required: true },
-  rate: { type: Number, required: true },
-  imageUrl: { type: String, required: true }},
-  { collection: 'books' });
+  author: { type: String, required: true },
+  year: { type: Number, required: true },
+  genre: { type: String, required: true },
+  imageUrl: { type: String, required: true },
+  ratings: [
+    {
+      userId: { type: String, required: true },
+      grade: { type: Number, required: true },
+    }
+  ],
+  averageRating: { type: Number, default: null },
+})
   
 module.exports = mongoose.model('Book', bookSchema);
 

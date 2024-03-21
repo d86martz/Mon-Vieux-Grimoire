@@ -1,35 +1,41 @@
-const book = require("../models/book.model")
+const Book = require("../models/book.model")
 
-exports.getAllBook = (req, res, next) => {
-    book.find()
+exports.getAllBooks = (req, res) => {
+    Book.find()
       .then(book => res.status(200).json(book))
       .catch(error => res.status(400).json({ error }));
   };
+
+  exports.getOneBook = (req, res) => {
+    Book.findOne({ _id: req.params.id })
+      .then(book => res.status(200).json(book))
+      .catch(error => res.status(404).json({ error }));
+  };
   
-  exports.createBook = (req, res, next) => {
-    delete req.body._id;
+  exports.createBook = (req, res) => {
+    const bookObject = JSON.parse(req.body.book)
+    delete bookObject._id
+    delete bookObject._userId
     const book = new Book({
-      ...req.body
+        ...bookObject,
+        userId: req.auth.userId,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${
+            req.file.filename
+        }`,
     });
     book.save()
       .then(() => res.status(201).json({ message: 'Livre enregistré !'}))
       .catch(error => res.status(400).json({ error }));
   };
   
-  exports.getOneBook = (req, res, next) => {
-    book.findOne({ _id: req.params.id })
-      .then(book => res.status(200).json(book))
-      .catch(error => res.status(404).json({ error }));
-  };
-  
-  exports.modifyBook = (req, res, next) => {
-    book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
+  exports.modifyBook = (req, res) => {
+    Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
       .then(() => res.status(200).json({ message: 'Livre modifié !'}))
       .catch(error => res.status(400).json({ error }));
   };
   
-  exports.deleteBook = (req, res, next) => {
-    book.deleteOne({ _id: req.params.id })
-      .then(() => res.status(200).json({ message: 'Objet supprimé !'}))
+  exports.deleteBook = (req, res) => {
+    Book.deleteOne({ _id: req.params.id })
+      .then(() => res.status(200).json({ message: 'Livre supprimé !'}))
       .catch(error => res.status(400).json({ error }));
   };
