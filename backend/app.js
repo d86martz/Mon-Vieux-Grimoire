@@ -5,9 +5,7 @@ const app = express();
 const userRoutes = require('./routes/user.route');
 const bookRoutes = require('./routes/book.route')
 
-mongoose.connect('mongodb+srv://DavidMartz:mongodb67@cluster0.gnr8vks.mongodb.net/',
-  { useNewUrlParser: true,
-    useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://DavidMartz:mongodb67@cluster0.gnr8vks.mongodb.net/')
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
