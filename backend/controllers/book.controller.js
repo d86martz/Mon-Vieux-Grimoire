@@ -2,9 +2,7 @@ const fs = require('fs')
 
 const Book = require("../models/book.model")
 
-// const imageDelete = require("../middlewares/imageSet");
-// const imageEdit = require("../middlewares/imageSet");
-const  toto1  = require("../middlewares/imageSet");
+const imageSet = require('../middlewares/imageSet');
 
 exports.getAllBooks = (req, res) => {
     Book.find()
@@ -19,10 +17,8 @@ exports.getOneBook = (req, res) => {
 };
 
 exports.createBook = (req, res) => {
-  
   const bookData = JSON.parse(req.body.book)
   delete bookData._id
-  delete bookData._userId
   const book = new Book({
     ...bookData,
     userId: req.auth.userId,
@@ -37,53 +33,53 @@ exports.createBook = (req, res) => {
     //   },
     // ], 
   })
-  //imageEdit(book.imageUrl)
   book.save()
     .then(() => res.status(201).json({ message: 'Livre enregistré !'}))
-    .catch(error => res.status(500).json({ error }))
+    .catch(error => res.status(400).json({ error }))
 }
   
 exports.modifyBook = (req, res) => {
-  // if(req.file){
-  // }
-  console.log('je suis la')
-  console.log('je suis pas la')
-  const book = Book.findOne({ _id: req.params.id })
-  .then(book => {
-    if (req.file) {
-      // imageDelete(book.imageUrl)
-      console.log('Image is deleted')
-    }
-  })
-
-  const bookData = req.file
-  ? {
-      ...JSON.parse(req.body.book),
-      imageUrl: `${req.protocol}://${req.get("host")}/images/${
-        req.file.filename
-      }`
-    }
-  : { ...req.body };
-  Book.updateOne({ _id: req.params.id }, { ...bookData })
-    .then(() => res.status(200).json({ message: 'Livre modifié !'}))
-    .catch(error => res.status(500).json({ error }));
+  Book.findOne({ _id: req.params.id })
+    .then(book => {
+      if (book.userId != req.auth.userId) {
+        res.status(401).json({ message: 'Utilisateur non autorisé' });
+      } else {
+        if(req.file){
+          imageSet.delete(book.imageUrl)
+        } 
+        const bookData = req.file
+        ? {
+          ...JSON.parse(req.body.book),
+          imageUrl: `${req.protocol}://${req.get("host")}/images/${
+            req.file.filename
+          }`
+          }
+        : { ...req.body };
+        Book.updateOne({ _id: req.params.id }, { ...bookData })
+          .then(() => res.status(200).json({ message: 'Livre modifié !'}))
+          .catch(error => res.status(500).json({ error }));
+      }
+    })
 }
 
 exports.deleteBook = (req, res) => {
-  const book = Book.findOne({ _id: req.params.id })
-  .then(book => {
-    // imageDelete(book.imageUrl)
-    console.log('Image is deleted')
-  })
-  Book.deleteOne({ _id: req.params.id })
-    .then(() => res.status(200).json({ message: 'Livre supprimé !' }))
-    .catch(error => res.status(500).json({ error }));
+  Book.findOne({ _id: req.params.id })
+    .then((book) => {
+      if (book.userId != req.auth.userId) {
+        res.status(401).json({ message: 'Utilisateur non autorisé' });
+      } else {
+        imageSet.delete(book.imageUrl)
+        Book.deleteOne({ _id: req.params.id })
+          .then(() => {res.status(200).json({ message: 'Livre supprimé !' })})
+          .catch((error) => res.status(401).json({ error }));
+      }
+    })
 }
 
 exports.getAverageRating = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
   .then((book) => {
-    return book.save()
+    book.save()
       .then((book) => res.status(201).json(book))
       .catch(error => res.status(400).json({ error }));
   });

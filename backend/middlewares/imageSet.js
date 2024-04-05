@@ -16,35 +16,47 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, callback) => {
     const extension = MIME_TYPES[file.mimetype]
-    const fileName = file.originalname.split(' ').join('_').replace('.' + extension, ('_') + Date.now() + '.' + extension)
+    const fileName = file.originalname.split(' ').join('_').replace('.' + extension, ('_') + Date.now() + '.webp')
     callback(null, fileName)
   }
 })
 
-const imageUpload = multer({storage: storage}).single('image')
-
-const imageEdit = () => {
-  console.log()
-  if(!file) return
-//   sharp(req.file) 
-//   .resize({
-//     width: 160,
-//     height: 260,
-//   })
-//   .webp({ quality: 20 })
-//   .toFile('../images/')
-//   fs.unlink(req.file)
+const imageEdit = (req, res, next) => {
+  if (!req.file) {
+    return next();
+  }
+  sharp(req.file.path)
+    .resize({ width: 206, height: 260 })
+    .toFormat('webp')
+    .webp({quality: 90})
+    .toBuffer()
+    .then(buffer => {
+      fs.writeFile(`images/${req.file.filename}`, buffer, (err) => {
+        if (err) {
+          return next(err);
+        }
+      })
+        next();
+    })
+    .catch((err) => {
+      next(err);
+    })
 }
 
-const imageDelete = (imageUrl) => {
-  const filename = imageUrl.split('/images/')[1]
-  const imagePath = path.join(__dirname, '..', 'images', filename)
-  fs.unlink(imagePath)
-}
+module.exports = (req, res, next) => {
+  multer({ storage: storage }).single('image')(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+    imageEdit(req, res, next);
+  });
+};
 
-// function test() {console.log('test')}
-const toto1 = () => {
-  console.log("test")
-}
-
-module.exports = toto1, imageUpload, imageEdit, imageDelete
+module.exports.delete = (imagePath) => {
+  const imageName = imagePath.split('/').pop();
+  fs.unlink(`images/${imageName}`, (err) => {
+    if (err) {
+      retun(err)
+    }
+  })
+} 
